@@ -5,6 +5,7 @@ const cors = require('cors')
 var fs = require('fs')
 const db = require('./db')
 const { json } = require('express')
+const { SlowBuffer } = require('buffer')
 app.use(cors())
 app.use(express.json())
 const BotToken    = "5099241906:AAHO300-3I0kJspMLOYaWk9ie8HZnXNkbGI";
@@ -25,6 +26,17 @@ const converttoresult = (jsonobject,order_id,tg_account)=>{
     }
   }
   return result
+}
+const replace = (word)=>{
+  let neww = ""
+  for(let x in word){
+    if(word[x] === "_"){
+      neww+=`"`
+    }else{
+      neww += word[x]
+    }
+  }
+  return neww
 }
 app.post('/stickers', (req, res) => {
   fs.writeFile(
@@ -85,8 +97,8 @@ app.post('/orders', (req, res) => {
               if (err) {
                 console.log(err)
               } else {
-                console.log(rows)
-                telegram.sendMessage( 342947123,converttoresult(req.body.cart,req.body.order_id,req.body.telegram_account), {parse_mode: "Markdown"});
+                let account = replace(req.body.telegram_account)
+                telegram.sendMessage( 342947123,converttoresult(req.body.cart,req.body.order_id,account), {parse_mode: "Markdown"});
                 res.send({ success: true, order: 'edited' })
               }
             })
@@ -121,7 +133,8 @@ app.post('/orders', (req, res) => {
               console.log(err)
             } else {
               console.log(rows)
-              telegram.sendMessage( 342947123,converttoresult(req.body.cart,req.body.order_id,req.body.telegram_account), {parse_mode: "Markdown"});
+              let account = replace(req.body.telegram_account)
+              telegram.sendMessage( 342947123,converttoresult(req.body.cart,req.body.order_id,account), {parse_mode: "Markdown"});
               res.send({ success: true, order: 'new' })
             }
           })
@@ -259,6 +272,7 @@ app.post('/orders/delete', (req, res) => {
     res.json(newOrder)
   })
 })
+
 
 const PORT = process.env.PORT || 5000
 app.listen(PORT)
